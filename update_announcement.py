@@ -32,6 +32,7 @@ for text_dict in text_list:
         old_content = r.json()
         if old_content['error']:
             print(f'{name}不存在')
+            print(old_content)
         elif old_content['parse']['wikitext']['*'] == content:
             print(f'{name}内容相同')
         else:
