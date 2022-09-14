@@ -30,7 +30,8 @@ for text_dict in text_list:
     with s.get(f'https://wiki.biligame.com/tdj/api.php?action=parse&page={name}&prop=wikitext&format=json') as r:
         r.encoding='utf-8'
         old_content = r.json()
-        if old_content['error']:
+        # if old_content has key 'error'
+        if 'error' in old_content:
             print(f'{name}不存在')
             print(old_content)
         elif old_content['parse']['wikitext']['*'] == content:
