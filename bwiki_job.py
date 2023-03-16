@@ -206,7 +206,10 @@ def get_announcement_list():
 
 def edit_wiki_announcement(text_list):
     for text_dict in text_list:
-        year = re.search(r'(\d{4})年\d+月\d+日\s*$', text_dict["context"]).group(1)
+        try:
+            year = re.search(r'(\d{4})年\d+月\d+日\s*$', text_dict["context"]).group(1)
+        except AttributeError:
+            year = 2023
 
         time = f'{year}{text_dict["month"]:0>2}{text_dict["day"]:0>2}'
         name = f'{time}{text_dict["name"]}'
