@@ -161,6 +161,7 @@ def wiki_upload_files(image_list: list[tuple[str, bytes] | str], basename: str, 
         "format": "json",
     } | kargs
 
+    replace_file = []  # 重复文件记录, 需要修改后续content内容
     for bfile in image_list:
         if isinstance(bfile, str):
             continue
@@ -183,9 +184,18 @@ def wiki_upload_files(image_list: list[tuple[str, bytes] | str], basename: str, 
         match edit_result["upload"]["result"]:
             case "Success":
                 print(f"{bfile[0]} 上传成功")
-            case "Warning" | _:
+            case "Warning":
+                if "duplicate" in edit_result["upload"]["warnings"]:  # 重复文件, 文件名不同 {'upload': {'result': 'Warning', 'warnings': {'duplicate': ['全新玩法「溯念之门」即将开启.27.png']}, 'filekey': '1allyddf5n40.jujva0.144100.png', 'sessionkey': '1allyddf5n40.jujva0.144100.png'}}
+                    new_file = edit_result["upload"]["warnings"]["duplicate"][0]
+                    replace_file.append((bfile[0], new_file))
+                    print(f"{bfile[0]} 已存在: {new_file}")
+                else:
+                    print(edit_result)
+                    print(f"{bfile[0]} 上传失败")
+            case _:
                 print(edit_result)
                 print(f"{bfile[0]} 上传失败")
+    return replace_file
 
 
 def get_announcement_list():
@@ -328,14 +338,23 @@ def edit_wiki_news(text_list):
             raise e
         if "error" in old_content:
             print(f'{text_dict["title"]} 不存在')
+            replace_file = wiki_upload_files(text_dict["image_list"], text_dict["title"], modify=False)
+            if replace_file:
+                for name, new_name in replace_file:
+                    content = content.replace("File:" + name, "File:" + new_name)
             wiki_edit_page(text_dict["title"], content, modify=False)
-            wiki_upload_files(text_dict["image_list"], text_dict["title"], modify=False)
         elif old_content["parse"]["wikitext"]["*"] == content:
             print(f'{text_dict["title"]} 内容相同')
         else:
             print(f'{text_dict["title"]} 内容不同')
-            wiki_edit_page(text_dict["title"], content)
-            wiki_upload_files(text_dict["image_list"], text_dict["title"])
+            replace_file = wiki_upload_files(text_dict["image_list"], text_dict["title"])
+            if replace_file:
+                for name, new_name in replace_file:
+                    content = content.replace("File:" + name, "File:" + new_name)
+            if old_content["parse"]["wikitext"]["*"] != content:
+                wiki_edit_page(text_dict["title"], content)
+            else:
+                print(f'{text_dict["title"]} 调整后内容相同')
 
 
 def job_announcement():
