@@ -309,7 +309,7 @@ def get_news_list():
                     else:
                         descendant.unwrap()
 
-        content["html_text"] = str(soup)
+        content["html_text"] = str(soup).strip() # 最后可能会有换行符会被bwiki去掉
         content["image_list"] = image_list
 
     return text_list
