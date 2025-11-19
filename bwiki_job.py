@@ -163,7 +163,7 @@ def wiki_upload_files(image_list: list[tuple[str, bytes] | str], basename: str, 
 
     replace_file = []  # 重复文件记录, 需要修改后续content内容
     for bfile in image_list:
-        if isinstance(bfile, str):
+        if isinstance(bfile, str) or len(bfile[1]) == 0:
             continue
         flag = check_and_compare_file(bfile[0], bfile[1], modify)
         match flag:
@@ -309,7 +309,7 @@ def get_news_list():
                     else:
                         descendant.unwrap()
 
-        content["html_text"] = str(soup).strip() # 最后可能会有换行符会被bwiki去掉
+        content["html_text"] = str(soup).strip()  # 最后可能会有换行符会被bwiki去掉
         content["image_list"] = image_list
 
     return text_list
